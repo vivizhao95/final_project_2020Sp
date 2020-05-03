@@ -32,7 +32,20 @@ https://data.world/oecd/meat-consumption
 """
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
+
+def determineRelation(df, column1, column2):
+    relation = []
+    for i in range(len(df)):
+
+        if df.iloc[i, column1] * df.iloc[i, column2] < 0:
+            relation.append('Negative')
+        elif df.iloc[i, 2] * df.iloc[i, 3] > 0:
+            relation.append('Positive')
+        else:
+            relation.append('Nan')
+    return relation
 
 def avgChRateOfCountries(df , num_of_country, start_point):
     """
@@ -65,7 +78,6 @@ metadata_forest_cov = pd.read_csv('Metadata_forest.csv')
 GDP = pd.read_csv('GDP.csv')
 food_consumption = pd.read_csv('InternationalFoodConsumption.csv')
 
-# Hypothesis 1
 income = metadata_agriculture['IncomeGroup'].tolist()
 income = pd.DataFrame(income, columns = ['Country Income'])
 
@@ -79,7 +91,6 @@ country_agr = pd.concat([df_country_name, df_agr],axis=1, join='inner')
 df = pd.concat([df_country_name, income, df_agr],axis=1, join='inner')
 
 
-# Hypothesis 2 (GDP in 2010)
 
 gdp_str = GDP.set_index('year').iloc[-3].tolist()
 gdp = stringToFloat(gdp_str)
@@ -99,6 +110,25 @@ for_2008 = forest_cov['2008'].tolist()
 forest_2008 = pd.DataFrame(for_2008, columns = ['Forest_2008_% of land area'])
 df_merge = pd.concat([df_country_name, income,df_agr, df_for, forest_2008],axis=1, join='inner')
 
-df_1 = pd.merge(df_merge, df_gdp, how = 'inner', on = ['Country Name'])
-df_final = df_1.sort_values('GDP_2008')
-print(df_final)
+df_final = pd.merge(df_merge, df_gdp, how = 'inner', on = ['Country Name'])
+df_sort = df_final.sort_values('GDP_2008')
+
+
+# Hypothesis 2 (GDP in 2010)
+df_sort.plot(y='Forest_2008_% of land area', x='GDP_2008', style='o')
+
+df_2 = df_sort.groupby('Country Income').mean().sort_values('GDP_2008')
+df_2.plot(x='Forest_2008_% of land area', y='GDP_2008')
+plt.show()
+
+# Hypothesis 1
+relation_agr_forest = determineRelation(df_final, 2, 3)
+df_relation_agr_forest = pd.DataFrame(relation_agr_forest, columns = ['linear relation agr forest'])
+
+df_withrelation = pd.concat([df_final, df_relation_agr_forest],axis=1, join='inner')
+
+counts = df_withrelation['linear relation agr forest'].value_counts()
+counts_neg = counts['Negative']
+counts_pos = counts['Positive']
+total = counts_neg + counts_pos
+print(counts_neg/total)
