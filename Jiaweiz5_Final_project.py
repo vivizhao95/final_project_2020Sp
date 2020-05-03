@@ -92,6 +92,7 @@ df_gdp = pd.DataFrame(gdp_list, columns = ['Country Name'])
 df_gdp = pd.concat([df_gdp, gdp_2008],axis=1).dropna()
 df_gdp.columns = df_gdp.columns.str.rstrip()
 df = pd.merge(df, df_gdp, how = 'inner', on = ['Country Name'])
+
 avg_ch_rate_for = avgChRateOfCountries(forest_cov, 263,4)
 df_for = pd.DataFrame(avg_ch_rate_for, columns = ['slope_forest'])
 for_2008 = forest_cov['2008'].tolist()
