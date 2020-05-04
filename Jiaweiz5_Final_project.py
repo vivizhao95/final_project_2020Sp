@@ -162,6 +162,7 @@ counts_pos = counts['Positive']
 total = counts_neg + counts_pos
 # print(counts_neg/total)
 
+
 # Hypothesis 3
 df_meat_1 = meat_consumption.loc[meat_consumption['TIME'] == 2008]
 df_meat = df_meat_1.loc[meat_consumption['MEASURE'] == 'KG_CAP']
@@ -177,3 +178,4 @@ df_group_by_income = df_sort_value.groupby('Country Income').mean().sort_values(
 df_group_by_income.plot(y='Forest_2008_% of land area', x='Meat_consumption_KG_CAP')
 
 plt.show()
+
