@@ -41,7 +41,7 @@ def determineRelation(df, column1, column2):
 
         if df.iloc[i, column1] * df.iloc[i, column2] < 0:
             relation.append('Negative')
-        elif df.iloc[i, 2] * df.iloc[i, 3] > 0:
+        elif df.iloc[i, column1] * df.iloc[i, column1] > 0:
             relation.append('Positive')
         else:
             relation.append('Nan')
@@ -76,7 +76,8 @@ agriculture_land = pd.read_csv('Agriculture_land.csv')
 metadata_agriculture = pd.read_csv('Metadata_Agriculture.csv')
 metadata_forest_cov = pd.read_csv('Metadata_forest.csv')
 GDP = pd.read_csv('GDP.csv')
-food_consumption = pd.read_csv('InternationalFoodConsumption.csv')
+meat_consumption = pd.read_csv('meat_consumption.csv')
+
 
 income = metadata_agriculture['IncomeGroup'].tolist()
 income = pd.DataFrame(income, columns = ['Country Income'])
@@ -84,13 +85,16 @@ income = pd.DataFrame(income, columns = ['Country Income'])
 country_name = agriculture_land.T.iloc[0].tolist()
 df_country_name = pd.DataFrame(country_name, columns = ['Country Name'])
 
+country_code = agriculture_land.T.iloc[1].tolist()
+
+df_country_code = pd.DataFrame(country_code, columns = ['Country Code'])
+
+
 avg_ch_rate_agriculture = avgChRateOfCountries(agriculture_land , 263, 4)
 df_agr = pd.DataFrame(avg_ch_rate_agriculture, columns = ['slope_agr'])
 
 country_agr = pd.concat([df_country_name, df_agr],axis=1, join='inner')
-df = pd.concat([df_country_name, income, df_agr],axis=1, join='inner')
-
-
+df = pd.concat([df_country_name,df_country_code, income, df_agr],axis=1, join='inner')
 
 gdp_str = GDP.set_index('year').iloc[-3].tolist()
 gdp = stringToFloat(gdp_str)
@@ -102,13 +106,12 @@ df_gdp = pd.DataFrame(gdp_list, columns = ['Country Name'])
 
 df_gdp = pd.concat([df_gdp, gdp_2008],axis=1).dropna()
 df_gdp.columns = df_gdp.columns.str.rstrip()
-df = pd.merge(df, df_gdp, how = 'inner', on = ['Country Name'])
 
 avg_ch_rate_for = avgChRateOfCountries(forest_cov, 263,4)
 df_for = pd.DataFrame(avg_ch_rate_for, columns = ['slope_forest'])
 for_2008 = forest_cov['2008'].tolist()
 forest_2008 = pd.DataFrame(for_2008, columns = ['Forest_2008_% of land area'])
-df_merge = pd.concat([df_country_name, income,df_agr, df_for, forest_2008],axis=1, join='inner')
+df_merge = pd.concat([df_country_name, df_country_code, income,df_agr, df_for, forest_2008],axis=1, join='inner')
 
 df_final = pd.merge(df_merge, df_gdp, how = 'inner', on = ['Country Name'])
 df_sort = df_final.sort_values('GDP_2008')
@@ -119,10 +122,9 @@ df_sort.plot(y='Forest_2008_% of land area', x='GDP_2008', style='o')
 
 df_2 = df_sort.groupby('Country Income').mean().sort_values('GDP_2008')
 df_2.plot(x='Forest_2008_% of land area', y='GDP_2008')
-plt.show()
 
 # Hypothesis 1
-relation_agr_forest = determineRelation(df_final, 2, 3)
+relation_agr_forest = determineRelation(df_final, 3, 4)
 df_relation_agr_forest = pd.DataFrame(relation_agr_forest, columns = ['linear relation agr forest'])
 
 df_withrelation = pd.concat([df_final, df_relation_agr_forest],axis=1, join='inner')
@@ -131,4 +133,21 @@ counts = df_withrelation['linear relation agr forest'].value_counts()
 counts_neg = counts['Negative']
 counts_pos = counts['Positive']
 total = counts_neg + counts_pos
-print(counts_neg/total)
+#print(counts_neg/total)
+
+# Hypothesis 3
+df_meat_1 = meat_consumption.loc[meat_consumption['TIME'] == 2008]
+df_meat = df_meat_1.loc[meat_consumption['MEASURE'] == 'KG_CAP']
+
+df_meat_2008 = df_meat.groupby('LOCATION').mean().drop(columns= 'Flag Codes').drop(columns= 'TIME')
+df_withmeat = pd.merge(df_final, df_meat_2008, how='left',left_on=['Country Code'],right_on=['LOCATION']).dropna()
+df_sort_value = df_withmeat.sort_values('Value')
+df_sort_value.rename(index=str,columns={'Value':'Meat_consumption_KG_CAP'},inplace=True)
+
+df_sort_value.plot(y='Forest_2008_% of land area', x='Meat_consumption_KG_CAP')
+df_sort_value.plot(y='GDP_2008', x='Meat_consumption_KG_CAP', style = 'o')
+df_group_by_income = df_sort_value.groupby('Country Income').mean().sort_values('Meat_consumption_KG_CAP')
+df_group_by_income.plot(y='Forest_2008_% of land area', x='Meat_consumption_KG_CAP')
+
+plt.show()
+
