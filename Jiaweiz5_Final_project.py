@@ -179,3 +179,4 @@ df_group_by_income.plot(y='Forest_2008_% of land area', x='Meat_consumption_KG_C
 
 plt.show()
 
+
