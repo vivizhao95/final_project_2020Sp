@@ -1,5 +1,5 @@
 """
-Title: Analyse Potential Factors Affecting Forest Cover Rate of Different Countries
+Title: Analyse Potential Factors Affecting Forest Coverage of Different Countries
 
 team member: Jiawei Zhao
 
@@ -27,7 +27,7 @@ https://www.kaggle.com/jtennis/gdp-by-country-the-maddisonproject/data
 
 4. Meat Consumption by country
 
-https://data.world/oecd/meat-consumption
+https://data.world/oecd/meat-consumption/workspace/file?filename=meat_consumption.csv
 
 """
 import pandas as pd
@@ -36,12 +36,16 @@ import matplotlib.pyplot as plt
 
 def ConvertColToDF(df_input, trans: bool, index: int or str, column_name: str):
     """
-
-    :param df_input:
-    :param trans:
-    :param index:
-    :param column_name:
-    :return:
+    this function helps you convert a specific column in a dataframe to a new dataframe,
+    in order to operate on it (ie. merge, concatenate etc.)
+    :param df_input: input dataframe
+    :param trans: whether the dataframe needs transpose
+    :param index: column index, it can be either your index number or the column name
+    :param column_name: new column name, its like rename the column for convenience
+    :return: a dataframe
+    >>> df_test = pd.read_csv('Doctest_ConvertColToDF.csv')
+    >>> df_result = ConvertColToDF(df_test, True, 0, 'Country Name')
+    hbbh
     """
     if trans is True:
         df_input = df_input.T
@@ -102,6 +106,7 @@ def stringToFloat(list):
         if type(list[i]) == str:
             list[i] = float(list[i].replace(',', ''))
     return list
+
 
 
 # import data
